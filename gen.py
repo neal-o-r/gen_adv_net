@@ -9,7 +9,7 @@ def generator(x):
         l1 = net.feed_forward(l0, 1, 'gen', 'l1')
         
         return l1
-
+'''
 
 
 X = tf.placeholder(tf.float32, [1, 1], name="X")
@@ -53,3 +53,4 @@ with tf.Session() as sess:
                 guesses.append(sess.run(y_c,  feed_dict={X:np.array([[x]])})[0][0])
                         
 make_plot(train, guesses)
+'''
