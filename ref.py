@@ -95,7 +95,9 @@ with tf.Session() as sess:
                 label, pt =  step()
 
                 sess.run(train_adv, feed_dict={X_adv:pt, Y_adv:label})
-                sess.run(train_gen, feed_dict={X_adv:pt, Y_adv:label, 
+          
+                if label[0][0] == 1.:
+                      sess.run(train_gen, feed_dict={X_adv:pt, Y_adv:label, 
                                 X_gen:np.array([[pt[0][0]]])})
 
         n = 100
