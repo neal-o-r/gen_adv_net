@@ -9,7 +9,7 @@ plt.style.use('fivethirtyeight')
 
 fx = lambda x: x
 x_range = (-5,5)
-n_train = 10000
+n_train = 3000
 white_box = None
 
 
@@ -76,8 +76,10 @@ Y_adv = tf.placeholder(tf.float32, [1, 2], name="Y_adv")
 gen_y = gen.generator(X_gen)
 y_c = adv.adversary(X_adv)
 
+
 cost_adv = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y_c, Y_adv)) 
-cost_gen = tf.nn.l2_loss(1.0 - y_c[0][1])
+cost_gen = tf.nn.l2_loss(fx(X_gen) - gen_y)
+
 
 train_adv = tf.train.AdamOptimizer().minimize(cost_adv)
 train_gen = tf.train.AdamOptimizer().minimize(cost_gen)
@@ -94,7 +96,7 @@ with tf.Session() as sess:
 
                 sess.run(train_adv, feed_dict={X_adv:pt, Y_adv:label})
                 sess.run(train_gen, feed_dict={X_adv:pt, Y_adv:label, 
-                          X_gen:np.array([[pt[0][0]]])})
+                                X_gen:np.array([[pt[0][0]]])})
 
         n = 100
 	pts, guess, ans = run_test(n)
