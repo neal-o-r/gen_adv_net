@@ -9,7 +9,7 @@ plt.style.use('fivethirtyeight')
 
 fx = lambda x: x
 x_range = (-5,5)
-n_train = 3000
+n_train = 5000
 white_box = None
 
 
@@ -29,12 +29,15 @@ def make_chart(fx, pts, labels, guess):
 	col_inds = np.ravel(guess)
 
 	syms = ['s','o']  # s - random, o - function
-	cols = ['r', 'g'] # green correct, red wrong
+	cols = ['#fc4f30', '#6d904f'] # green correct, red wrong
+        xs = np.linspace(x_range[0], x_range[1], 100)
+        plt.plot(xs, fx(xs), label='Function', alpha=0.5)
 
 	for i, p in enumerate(flat_pts):
-		plt.scatter(p[0], p[1], 
+		plt.scatter(p[0], p[1], s=20, 
                    marker=syms[sym_inds[i]], color=cols[col_inds[i]])
 
+        plt.legend(loc='best')
 	plt.show()
 
 def step():
@@ -47,8 +50,7 @@ def step():
 		pt = np.array([[x, y]])
 
 	else:
-                y = sess.run(gen_y, feed_dict={X_gen:np.array([[x]])})
-        	pt = np.array([[x, y[0][0]]])
+                pt = sess.run(gen_pt, feed_dict={X_gen:np.array([[x]])})
  
         return label, pt
 
@@ -72,17 +74,22 @@ X_gen = tf.placeholder(tf.float32, [1,1], name="X_gen")
 
 X_adv = tf.placeholder(tf.float32, [1, 2], name="X_adv")
 Y_adv = tf.placeholder(tf.float32, [1, 2], name="Y_adv")
+Y_rev = tf.abs(Y_adv - 1.0)
 
-gen_y = gen.generator(X_gen)
 y_c = adv.adversary(X_adv)
+gen_pt = gen.generator(X_gen)
+gen_lab = adv.adversary(gen_pt)
+
+adv_vars = [i for i in tf.trainable_variables() if i.name.startswith('adv')]
+gen_vars = [i for i in tf.trainable_variables() if i.name.startswith('gen')]
 
 
 cost_adv = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y_c, Y_adv)) 
-cost_gen = tf.nn.l2_loss(fx(X_gen) - gen_y)
+cost_gen = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(gen_lab, Y_rev))
+ 
+train_adv = tf.train.AdamOptimizer().minimize(cost_adv, var_list=adv_vars)
+train_gen = tf.train.AdamOptimizer().minimize(cost_gen, var_list=gen_vars)
 
-
-train_adv = tf.train.AdamOptimizer().minimize(cost_adv)
-train_gen = tf.train.AdamOptimizer().minimize(cost_gen)
 
 test_adv = tf.equal(tf.argmax(y_c, 1), tf.argmax(Y_adv, 1))
 
