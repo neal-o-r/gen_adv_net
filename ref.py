@@ -25,20 +25,20 @@ def black_box(white_box=None):
 def make_chart(fx, pts, labels, guess):
 
 	flat_pts = np.ravel(pts).reshape(100,2)
-	sym_inds = np.ravel(np.argmax(labels, axis=2))
 	col_inds = np.ravel(guess)
 
-	syms = ['s','o']  # s - random, o - function
-	cols = ['#fc4f30', '#6d904f'] # green correct, red wrong
-        xs = np.linspace(x_range[0], x_range[1], 100)
+	col = ['#fc4f30', '#6d904f'] # green correct, red wrong
+	
+	cols = map(lambda x: col[0] if x==0 else col[1], col_inds)
+	
+	xs = np.linspace(x_range[0], x_range[1], 100)
         plt.plot(xs, fx(xs), label='Function', alpha=0.5)
 
-	for i, p in enumerate(flat_pts):
-		plt.scatter(p[0], p[1], s=20, 
-                   marker=syms[sym_inds[i]], color=cols[col_inds[i]])
+	plt.scatter(flat_pts[:,0], flat_pts[:,1], s=20, color=cols)
 
         plt.legend(loc='best')
 	plt.show()
+
 
 def step():
 
